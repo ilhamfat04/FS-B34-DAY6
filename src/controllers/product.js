@@ -2,7 +2,7 @@ const { product, user, category, productCategory } = require("../../models");
 
 exports.getProduct = async (req, res) => {
   try {
-    const data = await product.findAll({
+    let data = await product.findAll({
       include: [
         {
           model: user,
@@ -29,6 +29,16 @@ exports.getProduct = async (req, res) => {
       },
     });
 
+    let FILE_PATH = 'http://localhost:5000/uploads/'
+    data = JSON.parse(JSON.stringify(data))
+
+    data = data.map((item) => {
+      return {
+        ...item,
+        image: FILE_PATH + item.image
+      }
+    })
+
     res.send({
       status: "success...",
       data,
@@ -45,8 +55,14 @@ exports.getProduct = async (req, res) => {
 exports.addProduct = async (req, res) => {
   try {
     const { category: categoryName, ...data } = req.body;
-    
+
     // code here
+    const newProduct = await product.create({
+      ...data,
+      image: req.file.filename, // dari gambar yang dikirimkan dari upload middleware
+      idUser: req.user.id // dari auth middleware
+    })
+
     const categoryData = await category.findOne({
       where: {
         name: categoryName,
@@ -94,8 +110,16 @@ exports.addProduct = async (req, res) => {
         exclude: ["createdAt", "updatedAt", "idUser"],
       },
     });
-    
+
     // code here
+    productData = JSON.parse(JSON.stringify(productData))
+    res.send({
+      staus: "success",
+      data: {
+        ...productData,
+        image: 'http://localhost:5000/uploads/' + productData.image
+      }
+    })
   } catch (error) {
     console.log(error);
     res.status(500).send({
