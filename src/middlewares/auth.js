@@ -18,6 +18,7 @@ exports.auth = (req, res, next) => {
     // const verified = jwt.verify(token, SECRET_KEY)
     const verified = jwt.verify(token, process.env.TOKEN_KEY)
     console.log(process.env.TOKEN_KEY);
+
     req.user = verified
     next()
   } catch (error) {
